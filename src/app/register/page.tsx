@@ -5,36 +5,42 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { registerSchema } from "@/lib/validation/auth";
-import type { RegisterFormData } from "@/types/auth";
+import { registerSchema, RegisterType } from "@/lib/validation/auth";
 import { ChevronLeft } from "lucide-react";
 import { registerUser } from "@/lib/api/auth";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useToast } from "@/hooks/use-toast";
+import { Form } from "@/components/ui/form";
+import { CustomFormField } from "@/components/custom-formfield";
 
 export default function RegisterPage() {
+  const { toast } = useToast();
   const router = useRouter();
-  const [formData, setFormData] = useState<RegisterFormData>({
-    email: "",
-    username: "",
-    password: "",
-    confirmPassword: "",
-  });
-  const [errors, setErrors] = useState<Partial<RegisterFormData>>({});
   const [isLoading, setIsLoading] = useState(false);
+  const form = useForm<RegisterType>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      email: "",
+      username: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrors({});
-
+  const onSubmit = async (data: RegisterType) => {
     try {
-      const validatedData = registerSchema.parse(formData);
-      setIsLoading(true);
-
-      await registerUser(validatedData);
+      const result = await registerUser(data);
+      toast({
+        description: result.message,
+      });
       router.push("/login");
     } catch (error) {
-      if (error instanceof Error) {
-        setErrors({ email: error.message });
-      }
+      toast({
+        title: "Oops! Something went wrong.",
+        description: (error as Error).message,
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -52,51 +58,59 @@ export default function RegisterPage() {
 
         <h1 className="text-2xl font-bold mb-8 ml-5">Register</h1>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <Input
-            type="email"
-            placeholder="Enter Email"
-            value={formData.email}
-            onChange={(e) =>
-              setFormData({ ...formData, email: e.target.value })
-            }
-            error={errors.email}
-          />
-
-          <Input
-            type="text"
-            placeholder="Create Username"
-            value={formData.username}
-            onChange={(e) =>
-              setFormData({ ...formData, username: e.target.value })
-            }
-            error={errors.username}
-          />
-
-          <Input
-            type="password"
-            placeholder="Create Password"
-            value={formData.password}
-            onChange={(e) =>
-              setFormData({ ...formData, password: e.target.value })
-            }
-            error={errors.password}
-          />
-
-          <Input
-            type="password"
-            placeholder="Confirm Password"
-            value={formData.confirmPassword}
-            onChange={(e) =>
-              setFormData({ ...formData, confirmPassword: e.target.value })
-            }
-            error={errors.confirmPassword}
-          />
-
-          <Button type="submit" isLoading={isLoading}>
-            Register
-          </Button>
-        </form>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <CustomFormField control={form.control} name="email">
+              {(field) => (
+                <Input
+                  {...field}
+                  placeholder="Enter Email"
+                  id="input-email"
+                  disabled={form.formState.isSubmitting}
+                  aria-disabled={form.formState.isSubmitting}
+                />
+              )}
+            </CustomFormField>
+            <CustomFormField control={form.control} name="username">
+              {(field) => (
+                <Input
+                  {...field}
+                  placeholder="Create Username"
+                  id="input-username"
+                  disabled={form.formState.isSubmitting}
+                  aria-disabled={form.formState.isSubmitting}
+                />
+              )}
+            </CustomFormField>
+            <CustomFormField control={form.control} name="password">
+              {(field) => (
+                <Input
+                  {...field}
+                  placeholder="Create Password"
+                  type="password"
+                  id="input-password"
+                  disabled={form.formState.isSubmitting}
+                  aria-disabled={form.formState.isSubmitting}
+                />
+              )}
+            </CustomFormField>
+            <CustomFormField control={form.control} name="confirmPassword">
+              {(field) => (
+                <Input
+                  {...field}
+                  placeholder="Confirm Password"
+                  type="password"
+                  id="input-confirmPassword"
+                  disabled={form.formState.isSubmitting}
+                  aria-disabled={form.formState.isSubmitting}
+                />
+              )}
+            </CustomFormField>
+            <Button type="submit" isLoading={isLoading}>
+              Register
+            </Button>
+          </form>
+        </Form>
 
         <p className="mt-6 text-center text-gray-400">
           Have an account?{" "}

@@ -5,34 +5,41 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { loginSchema } from "@/lib/validation/auth";
+import { loginSchema, LoginType } from "@/lib/validation/auth";
 import type { LoginFormData } from "@/types/auth";
 import { ChevronLeft } from "lucide-react";
 import { loginUser } from "@/lib/api/auth";
+import { useForm } from "react-hook-form";
+import axios from "axios";
+import { toast } from "@/hooks/use-toast";
+import { CustomFormField } from "@/components/custom-formfield";
+import { Form } from "@/components/ui/form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [formData, setFormData] = useState<LoginFormData>({
-    email: "",
-    password: "",
-  });
-  const [errors, setErrors] = useState<Partial<LoginFormData>>({});
   const [isLoading, setIsLoading] = useState(false);
+  const form = useForm<LoginType>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrors({});
-
+  const handleLogin = async (data: LoginType) => {
     try {
-      const validatedData = loginSchema.parse(formData);
-      setIsLoading(true);
-
-      await loginUser(validatedData);
-      router.push("/profile");
+      const result = await loginUser(data);
+      toast({
+        description: result.message,
+      });
+      router.push("/login");
     } catch (error) {
-      if (error instanceof Error) {
-        setErrors({ email: error.message });
-      }
+      toast({
+        title: "Oops! Something went wrong.",
+        description: (error as Error).message,
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -50,31 +57,38 @@ export default function LoginPage() {
 
         <h1 className="text-2xl font-bold mb-8 ml-5">Login</h1>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <Input
-            type="email"
-            placeholder="Enter Username/Email"
-            value={formData.email}
-            onChange={(e) =>
-              setFormData({ ...formData, email: e.target.value })
-            }
-            error={errors.email}
-          />
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleLogin)} className="space-y-6">
+            <CustomFormField control={form.control} name="email">
+              {(field) => (
+                <Input
+                  {...field}
+                  placeholder="Enter Username/Email"
+                  id="input-email"
+                  disabled={form.formState.isSubmitting}
+                  aria-disabled={form.formState.isSubmitting}
+                />
+              )}
+            </CustomFormField>
 
-          <Input
-            type="password"
-            placeholder="Enter Password"
-            value={formData.password}
-            onChange={(e) =>
-              setFormData({ ...formData, password: e.target.value })
-            }
-            error={errors.password}
-          />
+            <CustomFormField control={form.control} name="password">
+              {(field) => (
+                <Input
+                  {...field}
+                  placeholder="Enter Password"
+                  type="password"
+                  id="input-password"
+                  disabled={form.formState.isSubmitting}
+                  aria-disabled={form.formState.isSubmitting}
+                />
+              )}
+            </CustomFormField>
 
-          <Button type="submit" isLoading={isLoading}>
-            Login
-          </Button>
-        </form>
+            <Button type="submit" isLoading={isLoading}>
+              Login
+            </Button>
+          </form>
+        </Form>
 
         <p className="mt-6 text-center text-gray-400">
           No account?{" "}

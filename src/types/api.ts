@@ -1,9 +1,13 @@
+import { ReactNode } from "react";
+
 export interface ApiResponse<T> {
   message: string;
   data: T;
 }
 
 export interface LoginResponse {
+  message: ReactNode;
+  data: any;
   token: string;
   user: {
     id: string;
@@ -13,6 +17,7 @@ export interface LoginResponse {
 }
 
 export interface RegisterResponse {
+  message: ReactNode;
   token: string;
   user: {
     id: string;

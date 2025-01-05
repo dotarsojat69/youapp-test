@@ -1,69 +1,23 @@
-import { API_BASE_URL } from "../config";
-import type { LoginFormData, RegisterFormData } from "@/types/auth";
-import type { ApiResponse, LoginResponse, RegisterResponse } from "@/types/api";
+import type { LoginResponse, RegisterResponse } from "@/types/api";
+import { LoginType, RegisterType } from "../validation/auth";
+import axios from "axios";
 
-class AuthError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "AuthError";
-  }
-}
-
-export const loginUser = async (
-  data: LoginFormData
-): Promise<LoginResponse> => {
+export const loginUser = async (body: LoginType) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
+    const response = await axios.post(`/api/login`, body);
 
-    const result: ApiResponse<LoginResponse> = await response.json();
-
-    if (!response.ok) {
-      throw new AuthError(result.message || "Login failed");
-    }
-
-    // Store token in localStorage
-    if (result.data.token) {
-      localStorage.setItem("token", result.data.token);
-    }
-
-    return result.data;
-  } catch (error) {
-    if (error instanceof AuthError) {
-      throw error;
-    }
-    throw new AuthError("Network error occurred");
+    return response.data as LoginResponse;
+  } catch (error: any) {
+    throw Error(error.response.data.message);
   }
 };
 
-export const registerUser = async (
-  data: RegisterFormData
-): Promise<RegisterResponse> => {
+export const registerUser = async (body: RegisterType) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/register`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
+    const response = await axios.post(`/api/register`, body);
 
-    const result: ApiResponse<RegisterResponse> = await response.json();
-
-    if (!response.ok) {
-      throw new AuthError(result.message || "Registration failed");
-    }
-
-    return result.data;
-  } catch (error) {
-    if (error instanceof AuthError) {
-      throw error;
-    }
-    throw new AuthError("Network error occurred");
+    return response.data as RegisterResponse;
+  } catch (error: any) {
+    throw Error(error.response.data.message);
   }
 };
