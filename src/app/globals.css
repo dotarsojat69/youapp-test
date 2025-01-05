@@ -16,16 +16,6 @@
   }
 }
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
-}
-
 .bg-gradient {
   background: radial-gradient(
     121.73% 121.49% at 100% -3.39%,
@@ -33,4 +23,14 @@ body {
     #0d1d23 56.18%,
     #09141a 100%
   );
+}
+
+.bg-input {
+  background: #ffffff0f;
+}
+
+@layer base {
+  :root {
+    --radius: 0.5rem;
+  }
 }
