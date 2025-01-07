@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,8 @@ export default function RegisterPage() {
   const { toast } = useToast();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [isFormComplete, setIsFormComplete] = useState(false);
+
   const form = useForm<RegisterType>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -28,8 +30,32 @@ export default function RegisterPage() {
     },
   });
 
+  useEffect(() => {
+    const subscription = form.watch((value) => {
+      const isComplete =
+        value.email &&
+        value.username &&
+        value.password &&
+        value.confirmPassword;
+      setIsFormComplete(!!isComplete);
+    });
+    return () => subscription.unsubscribe();
+  }, [form.watch]);
+
   const onSubmit = async (data: RegisterType) => {
     try {
+      setIsLoading(true);
+
+      // Validasi tambahan sebelum submit
+      if (data.password !== data.confirmPassword) {
+        toast({
+          title: "Error",
+          description: "Passwords do not match",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const result = await registerUser(data);
       toast({
         description: result.message,
@@ -106,7 +132,12 @@ export default function RegisterPage() {
                 />
               )}
             </CustomFormField>
-            <Button type="submit" isLoading={isLoading}>
+            <Button
+              variant="gradient"
+              isComplete={isFormComplete}
+              isLoading={isLoading}
+              type="submit"
+            >
               Register
             </Button>
           </form>

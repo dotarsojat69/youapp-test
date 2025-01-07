@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 export default function LoginPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [isFormComplete, setIsFormComplete] = useState(false);
+
   const form = useForm<LoginType>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -27,8 +29,17 @@ export default function LoginPage() {
     },
   });
 
+  useEffect(() => {
+    const subscription = form.watch((value) => {
+      const isComplete = value.email && value.password;
+      setIsFormComplete(!!isComplete);
+    });
+    return () => subscription.unsubscribe();
+  }, [form.watch]);
+
   const handleLogin = async (data: LoginType) => {
     try {
+      setIsLoading(true);
       const result = await loginUser(data);
       toast({
         description: result.message,
@@ -84,7 +95,12 @@ export default function LoginPage() {
               )}
             </CustomFormField>
 
-            <Button type="submit" isLoading={isLoading}>
+            <Button
+              variant="gradient"
+              isComplete={isFormComplete}
+              isLoading={isLoading}
+              type="submit"
+            >
               Login
             </Button>
           </form>

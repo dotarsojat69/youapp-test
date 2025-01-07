@@ -29,6 +29,14 @@
   background: #ffffff0f;
 }
 
+.bg-button {
+  background: linear-gradient(108.32deg, #62cdcb 24.88%, #4599db 78.49%);
+}
+
+.bg-button2 {
+  background: linear-gradient(50.32deg, #62cdcb 24.88%, #4599db 70%);
+}
+
 @layer base {
   :root {
     --radius: 0.5rem;
