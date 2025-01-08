@@ -20,7 +20,7 @@ export default async function handler(
     try {
       // Proxy request ke API eksternal
       const response = await axios.post(
-        "http://techtest.youapp.ai/api/register",
+        "http://localhost:8000/api/register",
         req.body,
         {
           headers: {
