@@ -22,14 +22,14 @@ export default function LoginPage() {
   const form = useForm<LoginType>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
+      loginIdentifier: "",
       password: "",
     },
   });
 
   useEffect(() => {
     const subscription = form.watch((value) => {
-      const isComplete = value.email && value.password;
+      const isComplete = value.loginIdentifier && value.password;
       setIsFormComplete(!!isComplete);
     });
     return () => subscription.unsubscribe();
@@ -42,7 +42,7 @@ export default function LoginPage() {
       toast({
         description: result.message,
       });
-      router.push("/login");
+      router.push("/profile");
     } catch (error) {
       toast({
         title: "Oops! Something went wrong.",
@@ -68,7 +68,7 @@ export default function LoginPage() {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleLogin)} className="space-y-6">
-            <CustomFormField control={form.control} name="email">
+            <CustomFormField control={form.control} name="loginIdentifier">
               {(field) => (
                 <Input
                   {...field}
