@@ -2,21 +2,14 @@
 
 import Link from "next/link";
 import { LogOut, User } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 
 export function Navbar() {
-  const router = useRouter();
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { logout } = useAuth();
 
   const handleLogout = async () => {
-    setIsLoggingOut(true);
-
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    router.push("/login");
+    await logout();
   };
 
   return (
@@ -32,15 +25,9 @@ export function Navbar() {
               <span className="sr-only">Profile</span>
             </Link>
           </Button>
-          <Button
-            variant="ghost"
-            onClick={handleLogout}
-            disabled={isLoggingOut}
-          >
+          <Button variant="ghost" onClick={handleLogout}>
             <LogOut className="h-5 w-5" />
-            <span className="sr-only">
-              {isLoggingOut ? "Logging out..." : "Logout"}
-            </span>
+            <span className="sr-only">Logout</span>
           </Button>
         </div>
       </div>
