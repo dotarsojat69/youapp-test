@@ -3,16 +3,18 @@
 import React, { useEffect, useState } from "react";
 import { ChevronLeft, Edit3 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import api from "@/lib/axios";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import Image from "next/image";
+import { UpdateAbout } from "@/components/UpdateAbout";
+import { format } from "date-fns";
 
 const ProfilePage = () => {
   const [profile, setProfile] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter();
+  const [isAboutEditOpen, setIsAboutEditOpen] = useState(false);
   const { toast } = useToast();
   const { logout } = useAuth();
 
@@ -46,6 +48,15 @@ const ProfilePage = () => {
     fetchProfile();
   }, []);
 
+  const handleUpdate = (data: any) => {
+    setProfile((prev: any) => ({
+      ...prev,
+      ...data,
+      about: `${data.displayName} - ${data.gender}, ${data.height}cm, ${data.weight}kg`,
+    }));
+    setIsAboutEditOpen(false);
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-primary-50 flex items-center justify-center">
@@ -70,7 +81,15 @@ const ProfilePage = () => {
         </div>
 
         <div className="p-3 mb-6 bg-[#162329] rounded-xl">
-          <div className="rounded-xl h-40"></div>
+          <div className="rounded-xl h-40">
+            {profile?.profilePicture && (
+              <Image
+                src={profile.profilePicture}
+                alt="Profile"
+                className="rounded-xl object-cover w-full h-full"
+              />
+            )}
+          </div>
           <span className="text-white">
             @{profile?.username || "username"},
           </span>
@@ -82,14 +101,34 @@ const ProfilePage = () => {
             <div className="space-y-2">
               <div className="flex items-center justify-between mb-5">
                 <h2 className="text-base font-bold">About</h2>
-                <button>
+                <button onClick={() => setIsAboutEditOpen(!isAboutEditOpen)}>
                   <Edit3 className="w-5 h-5 text-gray-400" />
                 </button>
               </div>
               <p className="text-[#FFFFFF85] text-sm">
-                Add in your your to help others know you better
+                {profile?.about ||
+                  "Add in your your to help others know you better"}
               </p>
             </div>
+            {isAboutEditOpen && (
+              <UpdateAbout
+                initialData={{
+                  displayName: profile?.displayName,
+                  gender: profile?.gender,
+                  birthday: profile?.birthday
+                    ? format(new Date(profile.birthday), "yyyy-MM-dd")
+                    : undefined,
+                  horoscope: profile?.horoscope,
+                  zodiac: profile?.zodiac,
+                  height: profile?.height,
+                  weight: profile?.weight,
+                  profilePicture: profile?.profilePicture,
+                }}
+                onUpdate={handleUpdate}
+                isOpen={isAboutEditOpen}
+                onToggle={() => setIsAboutEditOpen(!isAboutEditOpen)}
+              />
+            )}
           </div>
 
           {/* Interest Section */}
