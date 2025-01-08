@@ -1,7 +1,6 @@
 import axios from "axios";
 
-const baseURL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://techtest.youapp.ai";
+const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
 export const api = axios.create({
   baseURL,
@@ -27,9 +26,11 @@ api.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
 
-    // Tambahkan origin dan referrer
-    config.headers["Origin"] = "http://localhost:3000";
-    config.headers["Referer"] = "http://localhost:3000";
+    config.headers["Access-Control-Allow-Origin"] = "http://localhost:3000";
+    config.headers["Access-Control-Allow-Methods"] =
+      "GET,PUT,POST,DELETE,OPTIONS";
+    config.headers["Access-Control-Allow-Headers"] =
+      "Content-Type, Authorization";
 
     return config;
   },

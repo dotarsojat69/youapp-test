@@ -2,24 +2,30 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
-  // Tambahkan CORS headers
+  
   const response = NextResponse.next();
 
-  response.headers.append("Access-Control-Allow-Credentials", "true");
-  response.headers.append("Access-Control-Allow-Origin", "*");
-  response.headers.append(
+  // Set CORS headers
+  response.headers.set("Access-Control-Allow-Origin", "http://localhost:3000");
+  response.headers.set(
     "Access-Control-Allow-Methods",
-    "GET,OPTIONS,PATCH,DELETE,POST,PUT"
+    "GET, POST, PUT, DELETE, OPTIONS"
   );
-  response.headers.append(
+  response.headers.set(
     "Access-Control-Allow-Headers",
-    "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization"
+    "Content-Type, Authorization"
   );
+  response.headers.set("Access-Control-Allow-Credentials", "true");
+
+  // Handle preflight requests
+  if (request.method === "OPTIONS") {
+    response.headers.set("Access-Control-Max-Age", "1728000");
+    return response;
+  }
 
   return response;
 }
 
-// Lihat request apa saja yang ingin di-middleware
 export const config = {
   matcher: "/api/:path*",
 };

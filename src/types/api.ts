@@ -5,6 +5,11 @@ export interface ApiResponse<T> {
   data: T;
 }
 
+export type ResponseLogin = {
+  message: string;
+  token: string;
+};
+
 export interface LoginResponse {
   message: ReactNode;
   data: any;

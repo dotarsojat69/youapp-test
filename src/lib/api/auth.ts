@@ -4,7 +4,18 @@ import api from "../axios";
 
 export const loginUser = async (body: LoginType) => {
   try {
-    const response = await api.post(`/api/login`, body);
+    // mendeteksi apakah input adalah email atau username
+    const loginPayload = body.loginIdentifier.includes("@")
+      ? { email: body.loginIdentifier, password: body.password }
+      : { username: body.loginIdentifier, password: body.password };
+
+    const response = await api.post(`/api/login`, loginPayload);
+
+    // Simpan token ke localStorage
+    if (response.data.token) {
+      localStorage.setItem("token", response.data.token);
+    }
+
     return response.data as LoginResponse;
   } catch (error: any) {
     throw new Error(error.response?.data?.message || "Login failed");
@@ -22,13 +33,11 @@ export const registerUser = async (body: RegisterType) => {
   } catch (error: any) {
     console.error("Register Error:", error); // Log error detail
 
-    // Tangani berbagai tipe error
+    // menangani berbagai tipe error
     if (error.response) {
-      // Server responded with an error
       console.error("Server Error Response:", error.response.data);
       throw new Error(error.response.data?.message || "Registration failed");
     } else if (error.request) {
-      // Request was made but no response received
       console.error("No Response Received:", error.request);
       throw new Error(
         "No response from server. Check your network connection."
