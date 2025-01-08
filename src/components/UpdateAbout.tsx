@@ -112,7 +112,12 @@ export function UpdateAbout({
     const formData = new FormData();
     formData.append("displayName", values.displayName);
     formData.append("gender", values.gender);
-    formData.append("birthday", values.birthday);
+    formData.append(
+      "birthday",
+      values.birthday instanceof Date
+        ? values.birthday.toISOString()
+        : values.birthday || ""
+    );
     formData.append("height", values.height);
     formData.append("weight", values.weight);
     if (profilePicture) {
