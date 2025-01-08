@@ -37,6 +37,32 @@
   background: linear-gradient(50.32deg, #62cdcb 24.88%, #4599db 70%);
 }
 
+.bg-plus {
+  background: linear-gradient(
+    74.08deg,
+    #94783e -6.8%,
+    #f3eda6 16.76%,
+    #f8fae5 30.5%,
+    #ffe2be 49.6%,
+    #d5be88 78.56%,
+    #f8fae5 89.01%,
+    #d5be88 100.43%
+  );
+}
+
+.gold {
+  background: linear-gradient(
+    74.08deg,
+    #94783e -6.8%,
+    #f3eda6 16.76%,
+    #f8fae5 30.5%,
+    #ffe2be 49.6%,
+    #d5be88 78.56%,
+    #f8fae5 89.01%,
+    #d5be88 100.43%
+  );
+}
+
 @layer base {
   :root {
     --radius: 0.5rem;
