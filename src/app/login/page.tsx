@@ -39,9 +39,20 @@ export default function LoginPage() {
     try {
       setIsLoading(true);
       const result = await loginUser(data);
+
+      // Simpan token di localStorage
+      if (result.token) {
+        localStorage.setItem("token", result.token);
+
+        // Set cookie untuk middleware
+        document.cookie = `next-auth.token=${result.token}; path=/; SameSite=Strict`;
+      }
+
       toast({
         description: result.message,
       });
+
+      // Redirect ke profile
       router.push("/profile");
     } catch (error) {
       toast({

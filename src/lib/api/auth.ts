@@ -1,22 +1,20 @@
-import { LoginResponse, RegisterResponse } from "@/types/api";
+import { RegisterResponse, ResponseLogin } from "@/types/api";
 import { LoginType, RegisterType } from "../validation/auth";
 import api from "../axios";
 
 export const loginUser = async (body: LoginType) => {
   try {
-    // mendeteksi apakah input adalah email atau username
-    const loginPayload = body.loginIdentifier.includes("@")
-      ? { email: body.loginIdentifier, password: body.password }
-      : { username: body.loginIdentifier, password: body.password };
+    const response = await api.post(`/api/login`, {
+      username: body.loginIdentifier,
+      password: body.password,
+    });
 
-    const response = await api.post(`/api/login`, loginPayload);
-
-    // Simpan token ke localStorage
-    if (response.data.token) {
-      localStorage.setItem("token", response.data.token);
+    // Pastikan response memiliki token
+    if (!response.data.token) {
+      throw new Error("No token received");
     }
 
-    return response.data as LoginResponse;
+    return response.data as ResponseLogin;
   } catch (error: any) {
     throw new Error(error.response?.data?.message || "Login failed");
   }

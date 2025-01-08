@@ -1,4 +1,5 @@
 import axios from "axios";
+import { toast } from "@/hooks/use-toast";
 
 const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
@@ -8,14 +9,7 @@ export const api = axios.create({
     "Content-Type": "application/json",
     Accept: "application/json",
   },
-  timeout: 15000, // Naikkan timeout
   withCredentials: false,
-
-  // Tambahkan konfigurasi untuk mengatasi preflight
-  proxy: {
-    host: "localhost",
-    port: 3000,
-  },
 });
 
 // Interceptor request
@@ -24,14 +18,10 @@ api.interceptors.request.use(
     const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+
+      // Tambahkan cookie
+      document.cookie = `next-auth.token=${token}; path=/; SameSite=Strict`;
     }
-
-    config.headers["Access-Control-Allow-Origin"] = "http://localhost:3000";
-    config.headers["Access-Control-Allow-Methods"] =
-      "GET,PUT,POST,DELETE,OPTIONS";
-    config.headers["Access-Control-Allow-Headers"] =
-      "Content-Type, Authorization";
-
     return config;
   },
   (error) => Promise.reject(error)
@@ -41,34 +31,25 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.error("Axios Interceptor Detailed Error:", {
-      error: error,
-      response: error.response,
-      request: error.request,
-      config: error.config,
-    });
+    // Tangani error autentikasi
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      // Hapus token dari localStorage dan cookie
+      localStorage.removeItem("token");
+      document.cookie =
+        "next-auth.token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
 
-    if (axios.isCancel(error)) {
-      throw new Error("Request canceled");
+      // Tampilkan pesan
+      toast({
+        title: "Session Expired",
+        description: "Please login again",
+        variant: "destructive",
+      });
+
+      // Redirect ke login
+      window.location.href = "/login";
     }
 
-    if (error.code === "ECONNABORTED") {
-      throw new Error("Request timeout");
-    }
-
-    if (error.response) {
-      // Server responded with an error status
-      console.error("Server Error Response:", error.response.data);
-      throw new Error(error.response.data?.message || "Server error occurred");
-    } else if (error.request) {
-      // Request was made but no response received
-      console.error("No Response Received:", error.request);
-      throw new Error("No response from server. Check network connection.");
-    } else {
-      // Something happened in setting up the request
-      console.error("Request Setup Error:", error.message);
-      throw new Error("Error preparing request");
-    }
+    return Promise.reject(error);
   }
 );
 

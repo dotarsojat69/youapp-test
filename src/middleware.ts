@@ -2,30 +2,32 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
-  
-  const response = NextResponse.next();
+  // Ambil token dari cookie
+  const token = request.cookies.get("next-auth.token")?.value;
+  const path = request.nextUrl.pathname;
 
-  // Set CORS headers
-  response.headers.set("Access-Control-Allow-Origin", "http://localhost:3000");
-  response.headers.set(
-    "Access-Control-Allow-Methods",
-    "GET, POST, PUT, DELETE, OPTIONS"
-  );
-  response.headers.set(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Authorization"
-  );
-  response.headers.set("Access-Control-Allow-Credentials", "true");
+  const protectedPaths = ["/profile"];
+  const publicPaths = ["/login", "/register"];
 
-  // Handle preflight requests
-  if (request.method === "OPTIONS") {
-    response.headers.set("Access-Control-Max-Age", "1728000");
-    return response;
+  // Debug logging
+  console.log("Middleware - Path:", path);
+  console.log("Middleware - Token:", !!token);
+
+  // Jika mencoba mengakses halaman yang dilindungi tanpa token
+  if (protectedPaths.includes(path) && !token) {
+    console.log("Redirecting to login");
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  return response;
+  // Jika sudah login dan mencoba mengakses halaman login/register
+  if (token && publicPaths.includes(path)) {
+    console.log("Redirecting to profile");
+    return NextResponse.redirect(new URL("/profile", request.url));
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: "/api/:path*",
+  matcher: ["/profile", "/login", "/register"],
 };
